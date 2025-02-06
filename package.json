@@ -12,13 +12,18 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "format": "prettier --write .",
+    "build:scripts": "tsc scripts/indexDocs.ts --esModuleInterop --module commonjs --outDir build/scripts",
+    "index-docs": "npm run build:scripts && node build/scripts/indexDocs.js"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",
     "@docusaurus/preset-classic": "3.7.0",
     "@mdx-js/react": "^3.0.0",
+    "@upstash/vector": "^1.2.0",
     "clsx": "^2.0.0",
+    "dotenv": "^16.4.7",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -27,6 +32,7 @@
     "@docusaurus/module-type-aliases": "^3.7.0",
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
+    "prettier": "^3.4.2",
     "typescript": "~5.6.2"
   },
   "browserslist": {
