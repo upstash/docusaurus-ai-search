@@ -1,6 +1,6 @@
 /**
  * Docusaurus AI Search Indexing Script
- * 
+ *
  * This script indexes Docusaurus documentation by:
  * 1. Finding all markdown/MDX files in the docs directory
  * 2. Splitting them into sections based on headings
@@ -8,7 +8,7 @@
  */
 
 import { Index } from '@upstash/vector';
-import "dotenv/config";
+import 'dotenv/config';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -31,7 +31,8 @@ interface DocumentSection {
 
 // Configuration Constants
 const DEFAULT_INDEX_NAMESPACE = 'docusaurus-ai-search-upstash';
-const indexNamespace = process.env.UPSTASH_VECTOR_INDEX_NAMESPACE ?? DEFAULT_INDEX_NAMESPACE;
+const indexNamespace =
+  process.env.UPSTASH_VECTOR_INDEX_NAMESPACE ?? DEFAULT_INDEX_NAMESPACE;
 const docsPath = 'docs';
 
 // Initialize Upstash Vector client
@@ -68,13 +69,16 @@ function slugify(text: string): string {
  * @returns The extracted or generated title
  */
 function extractTitle(content: string, fileName: string): string {
-  const titleMatch = content.match(/^---[\s\S]*?\ntitle:\s*["']?(.*?)["']?\n[\s\S]*?---/);
+  const titleMatch = content.match(
+    /^---[\s\S]*?\ntitle:\s*["']?(.*?)["']?\n[\s\S]*?---/
+  );
   if (titleMatch) {
     return titleMatch[1].replace(/['"]/g, '').trim();
   }
-  return path.basename(fileName, path.extname(fileName))
+  return path
+    .basename(fileName, path.extname(fileName))
     .split(/[-_]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
 
@@ -111,7 +115,9 @@ async function findMarkdownFiles(dir: string): Promise<string[]> {
  */
 async function processMarkdownFile(filePath: string) {
   const content = await fs.readFile(filePath, 'utf-8');
-  const relativePath = path.relative(process.cwd(), filePath).replace(/\.(md|mdx)$/, '');
+  const relativePath = path
+    .relative(process.cwd(), filePath)
+    .replace(/\.(md|mdx)$/, '');
   const fileName = path.basename(filePath);
   const title = extractTitle(content, fileName);
 
@@ -120,7 +126,7 @@ async function processMarkdownFile(filePath: string) {
     title,
     _meta: {
       path: relativePath,
-    }
+    },
   };
 }
 
@@ -138,13 +144,13 @@ function splitMdxByHeadings(mdx: string): DocumentSection[] {
 
   return sections
     .map((section) => {
-      const lines = section.trim().split("\n");
+      const lines = section.trim().split('\n');
       const headingMatch = lines[0]?.match(/^(#{1,6})\s+(.+)$/);
 
       if (!headingMatch) return null;
 
       const [, hashes, title] = headingMatch;
-      const content = lines.slice(1).join("\n").trim();
+      const content = lines.slice(1).join('\n').trim();
 
       return {
         level: hashes?.length,
@@ -165,7 +171,9 @@ async function indexDocs() {
 
     // Find and process markdown files
     console.log('Finding markdown files...');
-    const markdownFiles = await findMarkdownFiles(path.join(process.cwd(), docsPath));
+    const markdownFiles = await findMarkdownFiles(
+      path.join(process.cwd(), docsPath)
+    );
     console.log(`Found ${markdownFiles.length} markdown files`);
 
     console.log('Processing markdown files...');
@@ -173,7 +181,7 @@ async function indexDocs() {
     console.log(`Processed ${allDocs.length} documents`);
 
     // Reset the index for fresh indexing
-    await index.reset({namespace: indexNamespace});
+    await index.reset({ namespace: indexNamespace });
     console.log('Reset index for fresh indexing');
 
     // Process each document
@@ -187,19 +195,22 @@ async function indexDocs() {
           const headingId = `${doc._meta.path}#${slugify(section.title!)}`;
 
           const metadata: SearchMetadata = {
-            title: section.title ?? "<Error displaying title>",
+            title: section.title ?? '<Error displaying title>',
             path: doc._meta.path,
             level: section.level ?? 2,
-            type: "section",
+            type: 'section',
             content: section.content,
             documentTitle: doc.title,
           };
 
-          await index.upsert({
-            id: headingId,
-            data: `${section.title}\n\n${section.content}`,
-            metadata,
-          }, {namespace: indexNamespace});
+          await index.upsert(
+            {
+              id: headingId,
+              data: `${section.title}\n\n${section.content}`,
+              metadata,
+            },
+            { namespace: indexNamespace }
+          );
         }
 
         console.log(`✅ Indexed document sections: ${doc.title}`);
@@ -208,9 +219,9 @@ async function indexDocs() {
       }
     }
 
-    console.log("✅ Finished indexing docs");
+    console.log('✅ Finished indexing docs');
   } catch (error) {
-    console.error("❌ Failed to index docs:", error);
+    console.error('❌ Failed to index docs:', error);
     throw error;
   }
 }
