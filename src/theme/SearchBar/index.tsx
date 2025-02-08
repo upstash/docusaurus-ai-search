@@ -11,6 +11,7 @@ const ReactMarkdown = React.lazy(() => import('react-markdown'));
 // Custom hooks
 import { useSearchLogic } from './hooks/useSearchLogic';
 import { useAiChat } from './hooks/useAiChat';
+import { useDebounce } from './hooks/useDebounce';
 
 // Components
 import { SearchIcon, ClearIcon } from './components/Icons';
@@ -56,6 +57,8 @@ const SearchBarContent: React.FC = () => {
     setError(null);
   }, [setSearchQuery, setSearchResults, setAiResponse, setError]);
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 150);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === 'Escape' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) && isModalOpen) {
@@ -73,6 +76,14 @@ const SearchBarContent: React.FC = () => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen, clearSearch]);
+
+  useEffect(() => {
+    // Update search results when debounced query changes
+    if (debouncedSearchQuery !== searchQuery) {
+      setSearchResults([]);
+      setError(null);
+    }
+  }, [debouncedSearchQuery, searchQuery]);
 
   const handleResultClick = useCallback((result: SearchResult) => {
     history.push('/' + result.id);
