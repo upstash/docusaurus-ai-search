@@ -1,52 +1,67 @@
-# docusaurus-ai-search
+# Docusaurus AI Search Template
 
-You can use this template to create a new Docusaurus project which has hybrid search and AI chat capability.
+A Docusaurus template with hybrid search capabilities and AI-powered response functionality. This template enables your documentation to have:
+- 🔍 Vector-based semantic search
+- 🤖 AI-powered responses based on your documentation
 
-## How to Use This Template
+## Features
+- Semantic search powered by Upstash Vector
+- AI chat responses using OpenAI
+- Serverless functions for handling search and AI requests
+- Modern and responsive UI
+- Dark/Light mode support
 
-1. Create a new repository by clicking the `Use this template` button.
-2. Install the dependencies using `npm install`.
-3. Add your docs to the `docs` directory.
-4. Create an index in [Upstash Console](https://console.upstash.com).
-5. Create a `.env` file in the root directory and add the environment variables in the `.env.example` file.
-6. Run `npm run index-docs` to index your docs.
-7. Run `vercel` to deploy your site.
+## Quick Start
 
-Note: Do not forget to add your environment variables in your vercel dashboard as well.
+1. Click the `Use this template` button to create a new repository
+2. Clone your new repository and install dependencies:
+   ```bash
+   npm install
+   ```
+3. Add your documentation to the `docs` directory
+4. Set up your environment:
+   - Create an index in [Upstash Console](https://console.upstash.com)
+   - Copy `.env.example` to `.env` and fill in your credentials
+5. Index your documentation:
+   ```bash
+   npm run index-docs
+   ```
+6. Deploy to Vercel:
+   ```bash
+   vercel
+   ```
 
-#### Why are we using Vercel?
+> **Important**: After deploying, make sure to add your environment variables in your Vercel project dashboard.
 
-We both need to deploy our static site and our serverless functions.
-
-### Installation
-
-```
-npm install
-```
-
-This command installs the dependencies listed in the `package.json` file.
+## Development
 
 ### Local Development
 
-```
+```bash
 vercel dev
 ```
 
-This command starts a local development server. Most changes are reflected live without having to restart the server.
+This starts a local development server with full functionality, including search and AI features.
 
-When you run `npm run start`, Docusaurus starts a local development server that only serves the static content of your site. This means that any serverless functions (like those used for querying the index or generating AI responses) won't be available because they're not part of the static build.
+> **Note**: While `npm run start` is available, it only serves static content. Use `vercel dev` for full functionality including serverless features.
 
-On the other hand, running `vercel dev` launches the Vercel development server, which emulates the serverless functions locally. This allows you to test and use dynamic features—such as querying your index and receiving AI responses—right on your local machine.
+### Why Vercel?
 
-In short, `npm run start` is for static content only, whereas `vercel dev` provides a full environment including the serverless functions.
+This template uses a hybrid architecture:
+- Static content: Your documentation pages (handled by Docusaurus)
+- Dynamic features: Search and AI functionality (handled by serverless functions)
 
-### Format
+Vercel provides both:
+- Static site hosting for your documentation
+- Serverless function hosting for search and AI features
 
-```
+### Code Formatting
+
+```bash
 npm run format
 ```
 
-This command formats the codebase using Prettier.
+Formats the codebase using Prettier.
 
 ### Deployment
 
@@ -54,7 +69,7 @@ This command formats the codebase using Prettier.
 vercel
 ```
 
-This command deploys your site to Vercel.
+Deploys your site to Vercel.
 
 ### Website
 
