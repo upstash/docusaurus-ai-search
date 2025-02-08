@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  Suspense,
+} from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useHistory } from '@docusaurus/router';
 import { useColorMode } from '@docusaurus/theme-common';
@@ -40,12 +46,8 @@ const SearchBarContent: React.FC = () => {
     setError,
   } = useSearchLogic();
 
-  const {
-    aiResponse,
-    isAiLoading,
-    setAiResponse,
-    handleAiQuestion,
-  } = useAiChat();
+  const { aiResponse, isAiLoading, setAiResponse, handleAiQuestion } =
+    useAiChat();
 
   const enableAiChat = siteConfig.customFields?.enableAiChat as boolean;
 
@@ -58,7 +60,10 @@ const SearchBarContent: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Escape' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) && isModalOpen) {
+      if (
+        (e.key === 'Escape' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) &&
+        isModalOpen
+      ) {
         e.preventDefault();
         setIsModalOpen(false);
         clearSearch();
@@ -74,29 +79,40 @@ const SearchBarContent: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen, clearSearch]);
 
-  const handleResultClick = useCallback((result: SearchResult) => {
-    history.push('/' + result.id);
-    setIsModalOpen(false);
-    clearSearch();
-  }, [history, clearSearch]);
+  const handleResultClick = useCallback(
+    (result: SearchResult) => {
+      history.push('/' + result.id);
+      setIsModalOpen(false);
+      clearSearch();
+    },
+    [history, clearSearch]
+  );
 
-  const handleAiQuestionClick = useCallback(async (question: string) => {
-    if (!isAiLoading && !aiResponse) {
-      try {
-        await handleAiQuestion(question, searchResults.map(result => ({
-          content: result.data,
-          metadata: result.metadata
-        })));
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to get AI response');
+  const handleAiQuestionClick = useCallback(
+    async (question: string) => {
+      if (!isAiLoading && !aiResponse) {
+        try {
+          await handleAiQuestion(
+            question,
+            searchResults.map((result) => ({
+              content: result.data,
+              metadata: result.metadata,
+            }))
+          );
+        } catch (error) {
+          setError(
+            error instanceof Error ? error.message : 'Failed to get AI response'
+          );
+        }
       }
-    }
-  }, [isAiLoading, aiResponse, handleAiQuestion, searchResults, setError]);
+    },
+    [isAiLoading, aiResponse, handleAiQuestion, searchResults, setError]
+  );
 
   return (
     <div className={styles.searchContainer}>
-      <button 
-        className={styles.searchButton} 
+      <button
+        className={styles.searchButton}
         onClick={() => setIsModalOpen(true)}
         aria-label="Search"
       >
@@ -106,8 +122,8 @@ const SearchBarContent: React.FC = () => {
       </button>
 
       {isModalOpen && (
-        <div 
-          className={styles.modalOverlay} 
+        <div
+          className={styles.modalOverlay}
           onClick={() => {
             setIsModalOpen(false);
             clearSearch();
@@ -116,13 +132,16 @@ const SearchBarContent: React.FC = () => {
           aria-modal="true"
           aria-label="Search documentation"
         >
-          <div 
+          <div
             ref={modalRef}
             className={styles.modalContent}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
-              <form className={styles.searchForm} onSubmit={(e) => e.preventDefault()}>
+              <form
+                className={styles.searchForm}
+                onSubmit={(e) => e.preventDefault()}
+              >
                 <div className={styles.inputWrapper}>
                   <input
                     ref={searchInputRef}
@@ -146,7 +165,7 @@ const SearchBarContent: React.FC = () => {
                       </button>
                     )}
                     <div className={styles.divider}></div>
-                    <button 
+                    <button
                       className={styles.closeButton}
                       onClick={() => {
                         setIsModalOpen(false);
@@ -167,11 +186,13 @@ const SearchBarContent: React.FC = () => {
                   <LoadingDots text="Loading" />
                 </div>
               ) : error ? (
-                <div className={styles.error} role="alert">{error}</div>
+                <div className={styles.error} role="alert">
+                  {error}
+                </div>
               ) : searchResults.length > 0 ? (
                 <>
                   {enableAiChat && (
-                    <div 
+                    <div
                       className={`${styles.aiSection} ${aiResponse ? styles.aiSectionResponded : ''}`}
                       onClick={() => handleAiQuestionClick(searchQuery)}
                       role="button"
@@ -183,12 +204,21 @@ const SearchBarContent: React.FC = () => {
                           <span className={styles.aiLabel}>AI</span>
                           <div className={styles.aiQueryTextWrapper}>
                             <span className={styles.aiQueryText}>
-                              Tell me about <span className={styles.aiQueryHighlight}>{searchQuery}</span>
+                              Tell me about{' '}
+                              <span className={styles.aiQueryHighlight}>
+                                {searchQuery}
+                              </span>
                             </span>
                           </div>
                         </div>
                         <span className={styles.aiStatus}>
-                          {isAiLoading ? <LoadingDots /> : (aiResponse ? 'Response →' : 'Ask →')}
+                          {isAiLoading ? (
+                            <LoadingDots />
+                          ) : aiResponse ? (
+                            'Response →'
+                          ) : (
+                            'Ask →'
+                          )}
                         </span>
                       </div>
                       {aiResponse && (
@@ -196,7 +226,9 @@ const SearchBarContent: React.FC = () => {
                           <div className={styles.aiResponse}>
                             <Suspense fallback={<LoadingDots />}>
                               <TypewriterText text={aiResponse}>
-                                {(typedText) => <ReactMarkdown>{typedText}</ReactMarkdown>}
+                                {(typedText) => (
+                                  <ReactMarkdown>{typedText}</ReactMarkdown>
+                                )}
                               </TypewriterText>
                             </Suspense>
                           </div>
@@ -233,13 +265,17 @@ const SearchBarContent: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             <div className={styles.modalFooter}>
               <div className={styles.poweredBy}>
                 <span>Powered by</span>
-                <img 
-                  src={colorMode === 'dark' ? "/img/upstash/logo-dark.svg" : "/img/upstash/logo.svg"}
-                  alt="Upstash Logo" 
+                <img
+                  src={
+                    colorMode === 'dark'
+                      ? '/img/upstash/logo-dark.svg'
+                      : '/img/upstash/logo.svg'
+                  }
+                  alt="Upstash Logo"
                   className={styles.searchLogo}
                 />
               </div>
@@ -252,11 +288,7 @@ const SearchBarContent: React.FC = () => {
 };
 
 const SearchBar: React.FC = () => {
-  return (
-    <BrowserOnly>
-      {() => <SearchBarContent />}
-    </BrowserOnly>
-  );
+  return <BrowserOnly>{() => <SearchBarContent />}</BrowserOnly>;
 };
 
 export default SearchBar;

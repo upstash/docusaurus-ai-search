@@ -29,11 +29,13 @@ export function useSearchLogic() {
       if (!response.ok) throw new Error('Search request failed');
 
       const results = await response.json();
-      setSearchResults(results.map((result: any) => ({
-        id: String(result.id),
-        data: result.data,
-        metadata: result.metadata,
-      })));
+      setSearchResults(
+        results.map((result: any) => ({
+          id: String(result.id),
+          data: result.data,
+          metadata: result.metadata,
+        }))
+      );
     } catch (error) {
       console.error('Search error:', error);
       setError('An error occurred while searching. Please try again.');

@@ -20,7 +20,9 @@ export function useAiChat() {
       const data = await response.json();
       setAiResponse(data.response);
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to get AI response');
+      throw new Error(
+        err instanceof Error ? err.message : 'Failed to get AI response'
+      );
     } finally {
       setIsAiLoading(false);
     }
