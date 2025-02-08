@@ -30,14 +30,24 @@ const TypewriterText = ({
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-      const timer = setTimeout(() => {
+    if (isComplete) {
+      setDisplayedText(text);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (currentIndex < text.length) {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-      }, 8);
-      return () => clearTimeout(timer);
-  }, [text, currentIndex]);
+      } else {
+        setIsComplete(true);
+      }
+    }, 8);
+    return () => clearTimeout(timer);
+  }, [text, currentIndex, isComplete]);
 
   return children(displayedText);
 };
@@ -88,6 +98,14 @@ const SearchBarContent = (): JSX.Element => {
 
   // Debounce search query
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Clear all search related state
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setAiResponse(null);
+    setError(null);
+  }, []);
 
   // Search function
   const performSearch = useCallback(async (query: string) => {
@@ -162,9 +180,7 @@ const SearchBarContent = (): JSX.Element => {
       if ((e.key === 'Escape' || (e.key === 'k' && (e.metaKey || e.ctrlKey))) && isModalOpen) {
         e.preventDefault();
         setIsModalOpen(false);
-        setSearchQuery('');
-        setAiResponse(null);
-        setSearchResults([]);
+        clearSearch();
       }
       // Press Command/K to open the search modal
       if (e.key === 'k' && (e.metaKey || e.ctrlKey) && !isModalOpen) {
@@ -176,7 +192,18 @@ const SearchBarContent = (): JSX.Element => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isModalOpen]);
+  }, [isModalOpen, clearSearch]);
+
+  // Handle result click
+  const handleResultClick = (result: SearchResult) => {
+    history.push('/' + result.id);
+    setIsModalOpen(false);
+    clearSearch();
+  };
+
+  const handleClearClick = () => {
+    clearSearch();
+  };
 
   const handleAiQuestion = async (question: string) => {
     setIsAiLoading(true);
@@ -211,18 +238,6 @@ const SearchBarContent = (): JSX.Element => {
     }
   };
 
-  // Handle result click
-  const handleResultClick = (result: SearchResult) => {
-    history.push('/' + result.id);
-    setIsModalOpen(false);
-    setSearchQuery('');
-  };
-
-  const handleClearClick = () => {
-    setSearchQuery('');
-    setSearchResults([]);
-  };
-
   return (
     <div className={styles.searchContainer}>
       <button 
@@ -249,7 +264,9 @@ const SearchBarContent = (): JSX.Element => {
       </button>
 
       {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+        <div className={styles.modalOverlay} onClick={() => {
+          setIsModalOpen(false);
+        }}>
           <div 
             ref={modalRef}
             className={styles.modalContent}
@@ -292,7 +309,10 @@ const SearchBarContent = (): JSX.Element => {
                     <div className={styles.divider}></div>
                     <button 
                       className={styles.closeButton}
-                      onClick={() => setIsModalOpen(false)}
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        clearSearch();
+                      }}
                       aria-label="Close search"
                     >
                       <span className={styles.escKey}>ESC</span>
