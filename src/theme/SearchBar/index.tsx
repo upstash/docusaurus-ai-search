@@ -5,6 +5,8 @@ import { useColorMode } from '@docusaurus/theme-common';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import styles from './styles.module.css';
 
+const ReactMarkdown = React.lazy(() => import('react-markdown'));
+
 interface SearchResult {
   id: string;
   data: string;
@@ -19,24 +21,25 @@ interface SearchResult {
   };
 }
 
-const TypewriterText = ({ text }: { text: string }) => {
+const TypewriterText = ({ 
+  text, 
+  children 
+}: { 
+  text: string;
+  children: (typedText: string) => JSX.Element;
+}) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {
-    if (currentIndex < text.length) {
       const timer = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
       }, 8);
       return () => clearTimeout(timer);
-    } else {
-      setIsTyping(false);
-    }
   }, [text, currentIndex]);
 
-  return <span className={isTyping ? styles.typing : ''}>{displayedText}</span>;
+  return children(displayedText);
 };
 
 const LoadingDots = ({ text = "Thinking" }: { text?: string }) => (
@@ -329,7 +332,11 @@ const SearchBarContent = (): JSX.Element => {
                       {aiResponse && (
                         <div className={styles.aiResponseWrapper}>
                           <div className={styles.aiResponse}>
-                            <TypewriterText text={aiResponse} />
+                            <React.Suspense fallback={<LoadingDots />}>
+                              <TypewriterText text={aiResponse}>
+                                {(typedText) => <ReactMarkdown>{typedText}</ReactMarkdown>}
+                              </TypewriterText>
+                            </React.Suspense>
                           </div>
                         </div>
                       )}
