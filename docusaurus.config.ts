@@ -8,7 +8,6 @@ require('dotenv').config();
 const config: Config = {
   // Custom fields used by the SearchBar component
   customFields: {
-    upstashVectorIndexNamespace: process.env.UPSTASH_VECTOR_INDEX_NAMESPACE,
     enableAiChat: process.env.ENABLE_AI_CHAT === 'true',
   },
 
