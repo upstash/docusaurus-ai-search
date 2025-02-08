@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       )
       .join('\n');
 
-    const prompt = `Based on the following documentation context, please answer the question provided.Ensure your response is clear, concise, and directly related to the information presented in the context.Provide any necessary explanations or definitions for complex terms used in the context, and ensure that your answer is well-structured. Question: "${question}"\n\nContext:\n${contextText}`;
+    const prompt = `Using the provided documentation, answer the question. Ensure that your answer is clear, concise, and provides actionable directives. Avoid referencing the documentation directly (e.g., do not say "the context shows that..."). Instead, state what should be done. Questio/Query: "${question}"\n\nDocumentation:\n${contextText}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         {
           role: 'system',
           content:
-            'You are a helpful assistant that answers questions about Upstash documentation. Keep your answers concise and focused on the provided context.',
+            'You are an AI assistant that provides clear, actionable instructions based on any documentation. Your responses should offer direct recommendations and practical steps without referring to the documentation explicitly. Focus on telling the user what to do or explain what the documentation says.',
         },
         {
           role: 'user',
