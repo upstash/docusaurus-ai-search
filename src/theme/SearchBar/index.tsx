@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import { useHistory } from '@docusaurus/router';
 import { useColorMode } from '@docusaurus/theme-common';
@@ -48,6 +48,23 @@ const LoadingDots = ({ text = "Thinking" }: { text?: string }) => (
   </span>
 );
 
+// Custom hook for debouncing values
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 const SearchBarContent = (): JSX.Element => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +81,71 @@ const SearchBarContent = (): JSX.Element => {
   const {siteConfig} = useDocusaurusContext();
   const { colorMode } = useColorMode();
 
-  const ENABLE_AI = siteConfig.customFields?.ENABLE_AI_SEARCH as boolean;
+  const enableAiChat = siteConfig.customFields?.enableAiChat as boolean;
+
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Search function
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/query-index', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Search request failed');
+      }
+
+      const results = await response.json();
+      console.log("results: ", results);
+      
+      // Map the query results to match SearchResult type
+      const mappedResults: SearchResult[] = results.map(result => ({
+        id: String(result.id),
+        data: result.data,
+        metadata: {
+          title: result.metadata.title,
+          path: result.metadata.path,
+          level: result.metadata.level,
+          type: result.metadata.type,
+          content: result.metadata.content,
+          documentTitle: result.metadata.documentTitle,
+        },
+      }));
+      
+      setSearchResults(mappedResults);
+    } catch (error) {
+      console.error('Search error:', error);
+      setError('An error occurred while searching. Please try again.');
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Effect to trigger search when debounced query changes
+  useEffect(() => {
+    performSearch(debouncedSearchQuery);
+  }, [debouncedSearchQuery, performSearch]);
+
+  // Handle search input changes
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+  };
 
   // Clear AI response when search query changes
   useEffect(() => {
@@ -93,57 +174,6 @@ const SearchBarContent = (): JSX.Element => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen]);
-
-  // Handle search input changes with debounce
-  const handleSearchInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    setError(null);
-    
-    if (query.trim()) {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/query-index', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ query }),
-        });
-        console.log("response: ", response);
-
-        if (!response.ok) {
-          throw new Error('Search request failed');
-        }
-
-        const results = await response.json();
-        
-        // Map the query results to match SearchResult type
-        const mappedResults: SearchResult[] = results.map(result => ({
-          id: String(result.id),
-          data: result.data,
-          metadata: {
-            title: result.metadata.title,
-            path: result.metadata.path,
-            level: result.metadata.level,
-            type: result.metadata.type,
-            content: result.metadata.content,
-            documentTitle: result.metadata.documentTitle,
-          },
-        }));
-        
-        setSearchResults(mappedResults);
-      } catch (error) {
-        console.error('Search error:', error);
-        setError('An error occurred while searching. Please try again.');
-        setSearchResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      setSearchResults([]);
-    }
-  };
 
   const handleAiQuestion = async (question: string) => {
     setIsAiLoading(true);
@@ -180,7 +210,7 @@ const SearchBarContent = (): JSX.Element => {
 
   // Handle result click
   const handleResultClick = (result: SearchResult) => {
-    history.push('/' + result.metadata.path);
+    history.push('/' + result.id);
     setIsModalOpen(false);
     setSearchQuery('');
   };
@@ -278,7 +308,7 @@ const SearchBarContent = (): JSX.Element => {
                 <div className={styles.error}>{error}</div>
               ) : searchResults.length > 0 ? (
                 <>
-                  {ENABLE_AI && (
+                  {enableAiChat && (
                     <div 
                       className={`${styles.aiSection} ${aiResponse ? styles.aiSectionResponded : ''}`}
                       onClick={() => !isAiLoading && !aiResponse && handleAiQuestion(searchQuery)}
@@ -323,8 +353,6 @@ const SearchBarContent = (): JSX.Element => {
                     </div>
                   ))}
                 </>
-              ) : searchQuery ? (
-                <div className={styles.noResults}>No results found</div>
               ) : (
                 <div className={styles.searchResultsPlaceholder}>
                   Start typing to search...
