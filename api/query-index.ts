@@ -7,7 +7,6 @@ export default async function handler(req, res) {
 
   try {
     const { query } = req.body;
-    console.log("query: ", query);
 
     if (!process.env.UPSTASH_VECTOR_REST_URL || !process.env.UPSTASH_VECTOR_REST_TOKEN) {
       throw new Error('UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN are required');

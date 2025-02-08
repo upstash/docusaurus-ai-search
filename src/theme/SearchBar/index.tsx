@@ -131,7 +131,6 @@ const SearchBarContent = (): JSX.Element => {
       }
 
       const results = await response.json();
-      console.log("results: ", results);
       
       // Map the query results to match SearchResult type
       const mappedResults: SearchResult[] = results.map(result => ({
