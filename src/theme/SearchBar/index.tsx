@@ -79,6 +79,10 @@ const SearchBarContent: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen, clearSearch]);
 
+  useEffect(() => {
+    setAiResponse(null);
+  }, [searchQuery, setAiResponse]);
+
   const handleResultClick = useCallback(
     (result: SearchResult) => {
       history.push('/' + result.id);
