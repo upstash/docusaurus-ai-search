@@ -276,8 +276,8 @@ const SearchBarContent: React.FC = () => {
                 <img
                   src={
                     colorMode === 'dark'
-                      ? '/img/upstash/logo-dark.svg'
-                      : '/img/upstash/logo.svg'
+                      ? '/upstash/logo-dark.svg'
+                      : '/upstash/logo.svg'
                   }
                   alt="Upstash Logo"
                   className={styles.searchLogo}
