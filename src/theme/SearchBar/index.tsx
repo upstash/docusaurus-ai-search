@@ -79,6 +79,10 @@ const SearchBarContent: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isModalOpen, clearSearch]);
 
+  useEffect(() => {
+    setAiResponse(null);
+  }, [searchQuery, setAiResponse]);
+
   const handleResultClick = useCallback(
     (result: SearchResult) => {
       history.push('/' + result.id);
@@ -272,8 +276,8 @@ const SearchBarContent: React.FC = () => {
                 <img
                   src={
                     colorMode === 'dark'
-                      ? '/img/upstash/logo-dark.svg'
-                      : '/img/upstash/logo.svg'
+                      ? '/upstash/logo-dark.svg'
+                      : '/upstash/logo.svg'
                   }
                   alt="Upstash Logo"
                   className={styles.searchLogo}
