@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { SearchResult } from '../types';
 import { useDebounce } from './useDebounce';
+import { Index } from '@upstash/vector';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 export function useSearchLogic() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,6 +11,17 @@ export function useSearchLogic() {
   const [error, setError] = useState<string | null>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const { siteConfig } = useDocusaurusContext();
+
+  const { index, namespace } = useMemo(() => {
+    return {
+      index: new Index({
+        url: siteConfig.customFields.upstashVectorRestUrl as string,
+        token: siteConfig.customFields.upstashVectorReadOnlyRestToken as string,
+      }),
+      namespace: siteConfig.customFields.upstashVectorIndexNamespace as string || 'docusaurus-ai-search-upstash'
+    };
+  }, [siteConfig.customFields.upstashVectorRestUrl, siteConfig.customFields.upstashVectorReadOnlyRestToken, siteConfig.customFields.upstashVectorIndexNamespace]);
 
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -20,15 +33,14 @@ export function useSearchLogic() {
     setError(null);
 
     try {
-      const response = await fetch('/api/query-index', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
+      const results = await index.query({
+        topK: 15,
+        data: query,
+        includeMetadata: true,
+        includeData: true,
+        includeVectors: false,
+      }, { namespace });
 
-      if (!response.ok) throw new Error('Search request failed');
-
-      const results = await response.json();
       setSearchResults(
         results.map((result: any) => ({
           id: String(result.id),
@@ -43,7 +55,7 @@ export function useSearchLogic() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [index, namespace]);
 
   useEffect(() => {
     performSearch(debouncedSearchQuery);
