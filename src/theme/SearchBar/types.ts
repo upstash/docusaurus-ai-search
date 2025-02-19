@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type SearchMetadata = {
   title: string;
   path: string;
@@ -16,7 +18,7 @@ export interface SearchResult {
 
 export interface TypewriterTextProps {
   text: string;
-  children: (typedText: string) => JSX.Element;
+  children: (typedText: string) => React.JSX.Element;
 }
 
 export interface LoadingDotsProps {

@@ -291,8 +291,10 @@ const SearchBarContent: React.FC = () => {
   );
 };
 
-const SearchBar: React.FC = () => {
-  return <BrowserOnly>{() => <SearchBarContent />}</BrowserOnly>;
+const SearchBar = () => {
+  return (
+      <BrowserOnly>{() => <SearchBarContent />}</BrowserOnly>
+  );
 };
 
 export default SearchBar;
