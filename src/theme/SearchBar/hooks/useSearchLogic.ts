@@ -12,16 +12,25 @@ export function useSearchLogic() {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { siteConfig } = useDocusaurusContext();
+  const customFields = siteConfig.customFields ?? {};
 
   const { index, namespace } = useMemo(() => {
+    const vectorUrl = customFields.upstashVectorRestUrl as string;
+    const vectorToken = customFields.upstashVectorReadOnlyRestToken as string;
+    const vectorNamespace = (customFields.upstashVectorIndexNamespace as string) || 'docusaurus-ai-search-upstash';
+
+    if (!vectorUrl || !vectorToken) {
+      throw new Error('Upstash Vector REST URL and Read-only token are required in customFields');
+    }
+
     return {
       index: new Index({
-        url: siteConfig.customFields.upstashVectorRestUrl as string,
-        token: siteConfig.customFields.upstashVectorReadOnlyRestToken as string,
+        url: vectorUrl,
+        token: vectorToken,
       }),
-      namespace: siteConfig.customFields.upstashVectorIndexNamespace as string || 'docusaurus-ai-search-upstash'
+      namespace: vectorNamespace,
     };
-  }, [siteConfig.customFields.upstashVectorRestUrl, siteConfig.customFields.upstashVectorReadOnlyRestToken, siteConfig.customFields.upstashVectorIndexNamespace]);
+  }, [customFields]);
 
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
