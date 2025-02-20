@@ -1,49 +1,58 @@
-import { OpenAI } from 'openai';
+import { streamText, Message } from 'ai';
+import { openai } from '@ai-sdk/openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export const runtime = 'edge';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export async function POST(req: Request): Promise<Response> {
   try {
-    const { question, context } = req.body;
+    const { question, context } = await req.json();
 
     // Prepare context from search results
     const contextText = context
       .map(
-        (item) =>
+        (item: any) =>
           `${item.metadata.title || item.metadata.fileName}:\n${item.content}\n`
       )
       .join('\n');
 
-    const prompt = `Using the provided documentation, answer the question. Ensure that your answer is clear, concise, and provides actionable directives. Avoid referencing the documentation directly (e.g., do not say "the context shows that..."). Instead, state what should be done. Questio/Query: "${question}"\n\nDocumentation:\n${contextText}`;
+    // Build messages array instead of a raw prompt
+    const messages: Message[] = [
+      {
+        role: 'assistant',
+        content:
+          'You are an AI assistant that provides clear, actionable instructions based on any documentation. Provide direct recommendations and practical steps without referring to the documentation explicitly.',
+        id: 'system',
+      },
+      {
+        role: 'user',
+        content: `Question: "${question}"\n\nDocumentation:\n${contextText}`,
+        id: 'user-1',
+      },
+    ];
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an AI assistant that provides clear, actionable instructions based on any documentation. Your responses should offer direct recommendations and practical steps without referring to the documentation explicitly. Focus on telling the user what to do or explain what the documentation says.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      max_tokens: 500,
+    // Stream the response using streamText
+    const stream = streamText({
+      model: openai('gpt-4o'),
+      messages,
+      maxTokens: 500,
       temperature: 0.7,
     });
 
-    const response =
-      completion.choices[0]?.message?.content ||
-      'Sorry, I could not generate a response.';
-
-    res.status(200).json({ response });
+    // Return the stream using toDataStreamResponse
+    return stream.toTextStreamResponse({
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
   } catch (error) {
     console.error('AI Chat Error:', error);
-    res.status(500).json({ error: 'Failed to get AI response' });
+    return new Response(
+      JSON.stringify({ error: 'Failed to get AI response' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
