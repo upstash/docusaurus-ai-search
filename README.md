@@ -1,10 +1,12 @@
 # Docusaurus AI Search Template
 
 A Docusaurus template with hybrid search capabilities and AI-powered response functionality. This template enables your documentation to have:
+
 - 🔍 Vector-based semantic search
 - 🤖 AI-powered responses based on your documentation
 
 ## Features
+
 - Semantic search powered by Upstash Vector
 - AI chat responses using OpenAI
 - Serverless functions for handling search and AI requests
@@ -15,18 +17,23 @@ A Docusaurus template with hybrid search capabilities and AI-powered response fu
 
 1. Click the `Use this template` button to create a new repository
 2. Clone your new repository and install dependencies:
+
    ```bash
    npm install
    ```
+
 3. Add your documentation to the `docs` directory
 4. Set up your environment:
    - Create an index in [Upstash Console](https://console.upstash.com)
    - Copy `.env.example` to `.env` and fill in your credentials
 5. Index your documentation:
+
    ```bash
    npm run index-docs
    ```
+
 6. Deploy to Vercel:
+
    ```bash
    vercel
    ```
@@ -48,10 +55,12 @@ This starts a local development server with full functionality, including search
 ### Why Vercel?
 
 This template uses a hybrid architecture:
+
 - Static content: Your documentation pages (handled by Docusaurus)
 - Dynamic features: Search and AI functionality (handled by serverless functions)
 
 Vercel provides both:
+
 - Static site hosting for your documentation
 - Serverless function hosting for search and AI features
 
@@ -65,7 +74,7 @@ Formats the codebase using Prettier.
 
 ### Deployment
 
-```
+```bash
 vercel
 ```
 

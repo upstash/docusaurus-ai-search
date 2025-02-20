@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { SearchResult } from '../types';
 import { useDebounce } from './useDebounce';
+import { Index } from '@upstash/vector';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 export function useSearchLogic() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,6 +11,26 @@ export function useSearchLogic() {
   const [error, setError] = useState<string | null>(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const { siteConfig } = useDocusaurusContext();
+  const customFields = siteConfig.customFields ?? {};
+
+  const { index, namespace } = useMemo(() => {
+    const vectorUrl = customFields.upstashVectorRestUrl as string;
+    const vectorToken = customFields.upstashVectorReadOnlyRestToken as string;
+    const vectorNamespace = (customFields.upstashVectorIndexNamespace as string) || 'docusaurus-ai-search-upstash';
+
+    if (!vectorUrl || !vectorToken) {
+      throw new Error('Upstash Vector REST URL and Read-only token are required in customFields');
+    }
+
+    return {
+      index: new Index({
+        url: vectorUrl,
+        token: vectorToken,
+      }),
+      namespace: vectorNamespace,
+    };
+  }, [customFields]);
 
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -20,15 +42,14 @@ export function useSearchLogic() {
     setError(null);
 
     try {
-      const response = await fetch('/api/query-index', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
+      const results = await index.query({
+        topK: 15,
+        data: query,
+        includeMetadata: true,
+        includeData: true,
+        includeVectors: false,
+      }, { namespace });
 
-      if (!response.ok) throw new Error('Search request failed');
-
-      const results = await response.json();
       setSearchResults(
         results.map((result: any) => ({
           id: String(result.id),
@@ -43,7 +64,7 @@ export function useSearchLogic() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [index, namespace]);
 
   useEffect(() => {
     performSearch(debouncedSearchQuery);
