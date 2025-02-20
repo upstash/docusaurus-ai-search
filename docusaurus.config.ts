@@ -9,7 +9,8 @@ const config: Config = {
   // Custom fields used by the SearchBar component
   customFields: {
     upstashVectorRestUrl: process.env.UPSTASH_VECTOR_REST_URL,
-    upstashVectorReadOnlyRestToken: process.env.UPSTASH_VECTOR_READ_ONLY_REST_TOKEN,
+    upstashVectorReadOnlyRestToken:
+      process.env.UPSTASH_VECTOR_READ_ONLY_REST_TOKEN,
     upstashVectorIndexNamespace: process.env.UPSTASH_VECTOR_INDEX_NAMESPACE,
     enableAiChat: process.env.ENABLE_AI_CHAT === 'true',
   },

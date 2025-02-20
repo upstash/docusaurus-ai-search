@@ -17,10 +17,14 @@ export function useSearchLogic() {
   const { index, namespace } = useMemo(() => {
     const vectorUrl = customFields.upstashVectorRestUrl as string;
     const vectorToken = customFields.upstashVectorReadOnlyRestToken as string;
-    const vectorNamespace = (customFields.upstashVectorIndexNamespace as string) || 'docusaurus-ai-search-upstash';
+    const vectorNamespace =
+      (customFields.upstashVectorIndexNamespace as string) ||
+      'docusaurus-ai-search-upstash';
 
     if (!vectorUrl || !vectorToken) {
-      throw new Error('Upstash Vector REST URL and Read-only token are required in customFields');
+      throw new Error(
+        'Upstash Vector REST URL and Read-only token are required in customFields'
+      );
     }
 
     return {
@@ -32,39 +36,45 @@ export function useSearchLogic() {
     };
   }, [customFields]);
 
-  const performSearch = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
+  const performSearch = useCallback(
+    async (query: string) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const results = await index.query({
-        topK: 15,
-        data: query,
-        includeMetadata: true,
-        includeData: true,
-        includeVectors: false,
-      }, { namespace });
+      try {
+        const results = await index.query(
+          {
+            topK: 15,
+            data: query,
+            includeMetadata: true,
+            includeData: true,
+            includeVectors: false,
+          },
+          { namespace }
+        );
 
-      setSearchResults(
-        results.map((result: any) => ({
-          id: String(result.id),
-          data: result.data,
-          metadata: result.metadata,
-        }))
-      );
-    } catch (error) {
-      console.error('Search error:', error);
-      setError('An error occurred while searching. Please try again.');
-      setSearchResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [index, namespace]);
+        setSearchResults(
+          results.map((result: any) => ({
+            id: String(result.id),
+            data: result.data,
+            metadata: result.metadata,
+          }))
+        );
+      } catch (error) {
+        console.error('Search error:', error);
+        setError('An error occurred while searching. Please try again.');
+        setSearchResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [index, namespace]
+  );
 
   useEffect(() => {
     performSearch(debouncedSearchQuery);

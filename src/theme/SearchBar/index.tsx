@@ -21,7 +21,6 @@ import { useAiChat } from './hooks/useAiChat';
 // Components
 import { SearchIcon, ClearIcon } from './components/Icons';
 import { LoadingDots } from './components/LoadingDots';
-import { TypewriterText } from './components/TypewriterText';
 
 // Types
 import { SearchResult } from './types';
@@ -229,11 +228,7 @@ const SearchBarContent: React.FC = () => {
                         <div className={styles.aiResponseWrapper}>
                           <div className={styles.aiResponse}>
                             <Suspense fallback={<LoadingDots />}>
-                              <TypewriterText text={aiResponse}>
-                                {(typedText) => (
-                                  <ReactMarkdown>{typedText}</ReactMarkdown>
-                                )}
-                              </TypewriterText>
+                              <ReactMarkdown>{aiResponse}</ReactMarkdown>
                             </Suspense>
                           </div>
                         </div>
@@ -292,9 +287,7 @@ const SearchBarContent: React.FC = () => {
 };
 
 const SearchBar = () => {
-  return (
-      <BrowserOnly>{() => <SearchBarContent />}</BrowserOnly>
-  );
+  return <BrowserOnly>{() => <SearchBarContent />}</BrowserOnly>;
 };
 
 export default SearchBar;
