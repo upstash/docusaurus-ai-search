@@ -18,13 +18,14 @@
     "index-docs": "npm run build:scripts && node build/scripts/indexDocs.js"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.13",
     "@docusaurus/core": "3.7.0",
     "@docusaurus/preset-classic": "3.7.0",
     "@mdx-js/react": "^3.0.0",
     "@upstash/vector": "^1.2.0",
+    "ai": "^4.1.44",
     "clsx": "^2.0.0",
     "dotenv": "^16.4.7",
-    "openai": "^4.83.0",
     "prism-react-renderer": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
